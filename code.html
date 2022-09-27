@@ -23,7 +23,7 @@
     <!-- ==== Nav Section ==== -->
     <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#"><img src="img/marcm-pro-nav-light-logo.svg" class="d-inline-block align-text-top" width="32" height="32"> APP NAME</a>
+            <a class="navbar-brand" href="#"><img src="img/loanshark-nav-dark-logo.svg" class="d-inline-block align-text-top" width="32" height="32"> Loan Shark</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
                 aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -57,10 +57,89 @@
                 <div class="col-lg-8">
                     <pre class="line-numbers">
                         <code class="language-javascript">
-                            // Call helloWorld
-                            function helloWorld() {
-                                alert("Hello World");
-                            }                            
+                            //Get loan amount and term in months
+                            function getValues() {
+                            
+                                let _loanAmount = document.getElementById("inputLoanAmount").value;
+                                let _loanTerm = document.getElementById("inputLoanTerm").value;
+                                let _interestRate = document.getElementById("inputInterestRate").value;
+                                
+                                if (_loanAmount == "" || _loanTerm == "" || _interestRate == "") {
+                                    alert("Please enter all values.");
+                                } else if (isNaN(_loanAmount) || isNaN(_loanTerm) || isNaN(_interestRate)) {
+                                    alert("All values must be numbers.");
+                                } else {
+                                    let _calculatedLoanObj = calculateLoan(_loanAmount, _loanTerm, _interestRate);
+                                    displayLoan(_calculatedLoanObj);
+                                }
+                            
+                            }
+                            
+                            //Calculate loan values
+                            function calculateLoan(loanAmount, loanTerm, interestRate) {
+                                
+                                let _monthlyInterestRate = interestRate / 100 / 12;
+                                let _monthlyPayment = loanAmount * ((_monthlyInterestRate * Math.pow((1 + _monthlyInterestRate), loanTerm)) / (Math.pow((1 + _monthlyInterestRate), loanTerm) - 1));
+                                let _totalCost = _monthlyPayment * loanTerm;
+                                let _totalInterest = _totalCost - loanAmount;
+                                let _calculatedLoanObj = {
+                                    totalPrincipal: loanAmount,
+                                    calculatedMonthlyPayment: _monthlyPayment,
+                                    calculatedTotalCost: _totalCost,
+                                    calculatedTotalInterest: _totalInterest,
+                                    currentMonth: [],
+                                    currentMonthlyInterest: [],
+                                    currentMonthlyPrincipal: [],
+                                    totalPaidInterest: [],
+                                    currentBalance: [],
+                                };
+                            
+                                for (let i = 0; i < loanTerm; i++) {
+                            
+                                    _calculatedLoanObj.currentMonth[i] = i + 1;
+                            
+                                    _calculatedLoanObj.currentMonthlyInterest[i] = loanAmount * _monthlyInterestRate;
+                                    _calculatedLoanObj.currentMonthlyPrincipal[i] = _calculatedLoanObj.calculatedMonthlyPayment - _calculatedLoanObj.currentMonthlyInterest[i];
+                            
+                                    _calculatedLoanObj.totalPaidInterest[i] = _calculatedLoanObj.currentMonthlyInterest[i] + (_calculatedLoanObj.totalPaidInterest[i - 1] || 0);
+                            
+                                    loanAmount = loanAmount - _calculatedLoanObj.currentMonthlyPrincipal[i];
+                                    
+                                    _calculatedLoanObj.currentBalance[i] = loanAmount;
+                                }
+                            
+                                return _calculatedLoanObj;
+                            }
+                            
+                            //Display loan values
+                            function displayLoan(calculatedLoanObj) {
+                            
+                                let _dollarUS = Intl.NumberFormat("en-US", {
+                                    style: "currency",
+                                    currency: "USD",
+                                    useGrouping: true,
+                                });
+                            
+                                let _resultsTable = "";
+                            
+                                document.getElementById("outputTotalPrincipal").innerHTML = _dollarUS.format(calculatedLoanObj.totalPrincipal);
+                                document.getElementById("outputTotalInterest").innerHTML = _dollarUS.format(calculatedLoanObj.calculatedTotalInterest);
+                                document.getElementById("outputTotalCost").innerHTML = _dollarUS.format(calculatedLoanObj.calculatedTotalCost);
+                                document.getElementById("outputMonthlyPayment").innerHTML = _dollarUS.format(calculatedLoanObj.calculatedMonthlyPayment);
+                            
+                                for (let i = 0; i < calculatedLoanObj.currentMonth.length; i++) {
+                                    _resultsTable += `&lt;tr>`;
+                                    _resultsTable += `&lt;td>${calculatedLoanObj.currentMonth[i]}&lt;/td>`;
+                                    _resultsTable += `&lt;td>${_dollarUS.format(calculatedLoanObj.calculatedMonthlyPayment)}&lt;/td>`;
+                                    _resultsTable += `&lt;td>${_dollarUS.format(calculatedLoanObj.currentMonthlyPrincipal[i])}&lt;/td>`;
+                                    _resultsTable += `&lt;td>${_dollarUS.format(calculatedLoanObj.currentMonthlyInterest[i])}&lt;/td>`;
+                                    _resultsTable += `&lt;td>${_dollarUS.format(calculatedLoanObj.totalPaidInterest[i])}&lt;/td>`;
+                                    _resultsTable += `&lt;td>${_dollarUS.format(calculatedLoanObj.currentBalance[i])}&lt;/td>`;
+                                    _resultsTable += `&lt;/tr>`;
+                                }
+                            
+                                document.getElementById("loanAmortizationTable").innerHTML = _resultsTable;
+                            }                           
                         </code>
                     </pre>
                 </div>
@@ -79,19 +158,19 @@
                 <div class="col order-last order-lg-first text-light">
                     <div class="text-center text-lg-start">
                         <span class="align-middle">
-                            <span class="text-muted">&copy;2021</span> Marc Mironescu | contact@marcm.pro
+                            <span class="text-muted">&copy;2022</span> Marc Mironescu | contact@marcm.pro
                         </span>
                     </div>
                 </div>
                 <div class="col marcm-pro-full-light-logo d-flex align-items-center justify-content-center justify-content-lg-center">
-                    <a href="https://marcm.pro" target="_blank"><img src="img/marcm-pro-full-light-logo.svg" alt="Marc Mironescu Logo" height="32"></a>
+                    <a href="https://marcm.pro" target="_blank"><img src="img/marcm-pro-full-dark-logo.svg" alt="Marc Mironescu Logo" height="32"></a>
                 </div>
                 <div class="col d-flex align-items-center justify-content-center justify-content-lg-end">
                     <div class="row">
-                        <div class="col social"><a href="#" target="_blank"><i class="fab fa-linkedin fa-2x"></i></a></div>
-                        <div class="col social"><a href="#" target="_blank"><i class="fab fa-github fa-2x"></i></a></div>
-                        <div class="col social"><a href="#" target="_blank"><i class="fab fa-twitter fa-2x"></i></a></div>
-                        <div class="col social"><a href="#" target="_blank"><i class="fab fa-youtube fa-2x"></i></a></div>
+                        <div class="col social"><a href="https://www.linkedin.com/in/marcmironescu/" target="_blank"><i class="fab fa-linkedin fa-2x"></i></a></div>
+                        <div class="col social"><a href="https://github.com/marcm-pro/Reverse" target="_blank"><i class="fab fa-github fa-2x"></i></a></div>
+                        <div class="col social"><a href="https://twitter.com/marcmironescu/" target="_blank"><i class="fab fa-twitter fa-2x"></i></a></div>
+                        <div class="col social"><a href="https://www.youtube.com/channel/UCl0BS28Coic4KWnatXuLWtQ" target="_blank"><i class="fab fa-youtube fa-2x"></i></a></div>
                     </div>
                 </div>
             </div>
